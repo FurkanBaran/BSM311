@@ -1,0 +1,76 @@
+# Genel Ayarlar
+*.swp
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build ve Yayın Klasörleri
+bin/
+obj/
+packages/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.ilk
+*.log
+*.o
+*.out
+*.iobj
+*.idb
+*.ipdb
+
+# Visual Studio ve Diğer IDE Dosyaları
+.vscode/
+.vs/
+.idea/
+*.ncb
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.VC.opendb
+
+# Yayınlanmış Paketler
+*.nupkg
+*.snupkg
+*.pyc
+*.pyo
+*.rbc
+*.class
+
+# ASP.NET Özel Ayarları
+project.lock.json
+project.fragment.lock.json
+artifacts/
+wwwroot/node_modules/
+node_modules/
+
+# Logs, Debugging ve Çıkış Dosyaları
+*.log
+*.tlog
+*.log.csv
+
+# Uygulama Verileri
+App_Data/
+App_Data/**/*.*
+App_Data_temp/
+App_Themes/
+
+
+
+# Geçici ve Cache Dosyaları
+!.gitkeep
+*.pid
+*.tmp
+*.bak
+*.swp
+*.DS_Store
+Thumbs.db
+*.~*
+*.#*
+
+# Diğer Özel Ayarlar
+Releases/
+__pycache__/
+testResults/
