@@ -1,0 +1,51 @@
+# Visual Studio / ASP.NET Core
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.swp
+
+# Build outputs
+bin/
+obj/
+
+# Logs
+*.log
+*.tlog
+
+# npm packages
+node_modules/
+wwwroot/lib/
+
+# Dependency directories
+packages/
+.env
+
+# Debug and Release
+Debug/
+Release/
+
+# JetBrains Rider
+.idea/
+*.iml
+
+# Resharper
+_ReSharper.Caches/
+
+# SQLite DB (if used)
+*.sqlite
+*.sqlite3
+
+# EF Core Migrations
+Migrations/
+
+# Mac OS files
+.DS_Store
+
+# Windows Thumb files
+Thumbs.db
+
+# Postgres environment files (optional)
+pgdata/
+pg_dump.sql
