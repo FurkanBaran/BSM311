@@ -1,5 +1,6 @@
 # Visual Studio / ASP.NET Core
 .vscode/
+.vs/
 *.user
 *.suo
 *.userosscache
@@ -33,9 +34,6 @@ Release/
 # Resharper
 _ReSharper.Caches/
 
-# SQLite DB (if used)
-*.sqlite
-*.sqlite3
 
 # EF Core Migrations
 Migrations/
@@ -46,6 +44,6 @@ Migrations/
 # Windows Thumb files
 Thumbs.db
 
-# Postgres environment files (optional)
+# Postgres environment files 
 pgdata/
 pg_dump.sql
