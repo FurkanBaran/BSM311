@@ -6,6 +6,6 @@ namespace BSM311.Models
 		public string Username { get; set; }
 		public string Password { get; set; } 
 		public string FullName { get; set; } 
-		public string Role { get; set; } = "Admin";
+		public string Role { get; set; } = "Furkan";
 	}
 }
