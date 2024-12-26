@@ -22,30 +22,13 @@ namespace BSM311.Data
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<SalonSettings> SalonSettings { get; set; }
         public DbSet<SalonWorkingHours> SalonWorkingHours { get; set; }
+        public DbSet<EmployeeWorkDay> EmployeeWorkDays { get; set; } // Eklendi
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // Value converter for List<DayOfWeek>
-            var dayOfWeekListConverter = new ValueConverter<List<DayOfWeek>, string>(
-                v => string.Join(",", v),
-                v => v.Split(",", StringSplitOptions.RemoveEmptyEntries)
-                     .Select(x => Enum.Parse<DayOfWeek>(x))
-                     .ToList());
 
-            // Value comparer for List<DayOfWeek>
-            var dayOfWeekListComparer = new ValueComparer<List<DayOfWeek>>(
-                (c1, c2) => c1.SequenceEqual(c2),
-                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                c => c.ToList());
-
-            builder.Entity<Employee>()
-                .Property(e => e.WorkingDays)
-                .HasConversion(dayOfWeekListConverter)
-                .Metadata.SetValueComparer(dayOfWeekListComparer);
-
-            // Rest of your configurations...
             builder.Entity<Employee>()
                 .HasMany(e => e.Expertises)
                 .WithMany(e => e.Employees);
@@ -79,10 +62,29 @@ namespace BSM311.Data
                 .HasForeignKey<Employee>(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<EmployeeWorkDay>() // Düzeltildi
+                .HasOne(ewd => ewd.Employee)
+                .WithMany(e => e.WorkDays)
+                .HasForeignKey(ewd => ewd.EmployeeId);
+
             builder.Entity<SalonWorkingHours>()
                 .HasOne(wh => wh.SalonSettings)
                 .WithMany(s => s.WorkingHours)
                 .HasForeignKey(wh => wh.SalonSettingsId);
+
+            builder.Entity<EmployeeWorkDay>()
+                .HasIndex(ewd => new { ewd.EmployeeId, ewd.DayOfWeek });
+
+                        builder.Entity<Appointment>()
+                            .HasIndex(a => a.AppointmentDate);
+
+            builder.Entity<Service>()
+                .Property(s => s.Price)
+                .HasPrecision(18, 2);
+
+
+
+
         }
     }
 
