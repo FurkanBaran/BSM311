@@ -1,0 +1,207 @@
+﻿@model dynamic
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1 class="mb-4">Admin Dashboard</h1>
+
+<!-- Revenue Card -->
+<div class="card revenue-card mb-4">
+    <div class="card-body">
+        <h4 class="card-title mb-4 text-white">Revenue Overview</h4>
+        <div class="row">
+            <!-- Daily Revenue -->
+            <div class="col-md-3">
+                <div class="card gradient-purple text-white text-center">
+                    <div class="card-body">
+                        <h6>Today's Revenue</h6>
+                        <h3>$@Model.DailyRevenue</h3>
+                    </div>
+                </div>
+            </div>
+            <!-- Weekly Revenue -->
+            <div class="col-md-3">
+                <div class="card gradient-green text-white text-center">
+                    <div class="card-body">
+                        <h6>Weekly Revenue</h6>
+                        <h3>@Model.WeeklyRevenue</h3>
+                    </div>
+                </div>
+            </div>
+            <!-- Monthly Revenue -->
+            <div class="col-md-3">
+                <div class="card gradient-blue text-white text-center">
+                    <div class="card-body">
+                        <h6>Monthly Revenue</h6>
+                        <h3>$@Model.MonthlyRevenue</h3>
+                    </div>
+                </div>
+            </div>
+            <!-- Upcoming Revenue -->
+            <div class="col-md-3">
+                <div class="card gradient-red text-white text-center">
+                    <div class="card-body">
+                        <h6>Upcoming Revenue</h6>
+                        <h3>$@Model.UpcomingRevenue</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Appointments Card -->
+    <div class="col-md-4">
+        <div class="card gradient-purple text-white">
+            <div class="card-body">
+                <h5 class="card-title">Appointments</h5>
+                <p class="card-text">Today's Appointments: <strong>@Model.TodaysAppointments</strong></p>
+                <p class="card-text">Weekly Appointments: <strong>@Model.WeeklyAppointments</strong></p>
+                <p class="card-text">Total Appointments: <strong>@Model.TotalAppointments</strong></p>
+                <a href="/Admin/Appointment" class="btn gradient-button w-100">View Details</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Employees Card -->
+    <div class="col-md-4">
+        <div class="card gradient-green text-white">
+            <div class="card-body">
+                <h5 class="card-title">Employees</h5>
+                <p class="card-text">Total Employees: <strong>@Model.TotalEmployees</strong></p>
+                <p class="card-text">Working Today: <strong>@Model.TodayWorkingEmployees</strong></p>
+                <a href="/Admin/Employee" class="btn gradient-button w-100">View Details</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Card -->
+    <div class="col-md-4">
+        <div class="card gradient-blue text-white">
+            <div class="card-body">
+                <h5 class="card-title">Services</h5>
+                <ul class="list-unstyled">
+                    @foreach (var expertise in Model.ExpertiseWithServiceCount)
+                    {
+                        <li>@expertise.Name (<strong>@expertise.ServiceCount</strong> services)</li>
+                    }
+                </ul>
+                <a href="/Admin/Expertise" class="btn gradient-button w-100">View Details</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Mevcut dashboard içeriğinden sonra -->
+<div class="card mt-4">
+    <div class="card-body">
+        <h4 class="card-title">Salon Settings</h4>
+        <form id="settingsForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Salon Name</label>
+                        <input type="text" class="form-control" id="salonName" value="@Model.SalonSettings?.SalonName">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" class="form-control" id="address" value="@Model.SalonSettings?.Address">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" class="form-control" id="phone" value="@Model.SalonSettings?.Phone">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="email" value="@Model.SalonSettings?.Email">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Working Hours</h5>
+                    @foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
+                    {
+                        var workingHours = ((IEnumerable<dynamic>)Model.SalonSettings?.WorkingHours) ?? Enumerable.Empty<dynamic>();
+                        var workingHour = workingHours.FirstOrDefault(w => (DayOfWeek)w.DayOfWeek == day);
+
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-3">
+                                        <span>@day</span>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input"
+                                                   id="isOpen_@day"
+                                            @(workingHour?.IsOpen == true ? "checked" : "")>
+                                            <label class="custom-control-label" for="isOpen_@day">Open</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <input type="time" class="form-control"
+                                               id="openTime_@day"
+                                               value="@(workingHour?.OpenTime?.ToString(@"hh\:mm"))">
+                                    </div>
+                                    <div class="col-3">
+                                        <input type="time" class="form-control"
+                                               id="closeTime_@day"
+                                               value="@(workingHour?.CloseTime?.ToString(@"hh\:mm"))">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary mt-3" onclick="saveSettings()">Save Settings</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function saveSettings() {
+            const workingHours = [];
+
+        @foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
+        {
+            <text>
+                    workingHours.push({
+                        dayOfWeek: @((int)day),
+                        openTime: $('#openTime_@day').val(),
+                        closeTime: $('#closeTime_@day').val(),
+                        isOpen: $('#isOpen_@day').is(':checked')
+                    });
+            </text>
+        }
+
+                    const data = {
+                salonName: $('#salonName').val(),
+                address: $('#address').val(),
+                phone: $('#phone').val(),
+                email: $('#email').val(),
+                workingHours: workingHours
+            };
+
+            $.ajax({
+                url: '/Admin/SaveSettings',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    if (response.success) {
+                        alert('Settings saved successfully!');
+                    }
+                },
+                error: function () {
+                    alert('Error saving settings');
+                }
+            });
+        }
+    </script>
+}

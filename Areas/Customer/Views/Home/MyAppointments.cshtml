@@ -1,0 +1,136 @@
+﻿@using BSM311.Models
+@model IEnumerable<BSM311.Models.Appointment>
+@{
+    ViewData["Title"] = "My Appointments";
+    Layout = "~/Areas/Customer/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2>My Appointments</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            You don't have any appointments yet.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Service</th>
+                        <th>Employee</th>
+                        <th>Status</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var appointment in Model)
+                    {
+                        <tr>
+                            <td>@appointment.AppointmentDate.ToString("dd MMM yyyy")</td>
+                            <td>@appointment.AppointmentDate.ToString("HH:mm")</td>
+                            <td>@appointment.Service.Name</td>
+                            <td>@($"{appointment.Employee.FirstName} {appointment.Employee.LastName}")</td>
+                            <td>
+                                <span class="badge bg-@(appointment.Status switch {
+                                    AppointmentStatus.Pending => "warning",
+                                    AppointmentStatus.Confirmed => "success",
+                                    AppointmentStatus.Completed => "info",
+                                    AppointmentStatus.Cancelled => "danger",
+                                    _ => "secondary"
+                                })">
+                                    @appointment.Status
+                                </span>
+                            </td>
+                            <td>@appointment.Service.Price.ToString("C2")</td>
+                            <td>
+                                @if (appointment.Status == AppointmentStatus.Pending &&
+                               appointment.AppointmentDate > DateTime.Now)
+                                {
+                                    <button class="btn btn-sm btn-danger"
+                                            onclick="cancelAppointment(@appointment.Id)">
+                                        Cancel
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function cancelAppointment(id) {
+            if (confirm('Are you sure you want to cancel this appointment?')) {
+                $.ajax({
+                    url: `/api/customer/appointment/cancel/${id}`,
+                    type: 'POST',
+                    success: function (response) {
+                        if (response.success) {
+                            showNotification({
+                                success: true,
+                                message: "Appointment cancelled successfully!"
+                            });
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2000);
+                        } else {
+                            showNotification({
+                                success: false,
+                                message: response.message
+                            });
+                        }
+                    },
+                    error: function (xhr) {
+                        showNotification({
+                            success: false,
+                            message: xhr.responseJSON?.message || "Error cancelling appointment"
+                        });
+                    }
+                });
+            }
+        }
+
+        function showNotification(response) {
+            const notification = $(`
+                        <div class="notification alert ${response.success ? 'alert-success' : 'alert-danger'} alert-dismissible fade show position-fixed top-0 end-0 m-3"
+                             role="alert"
+                             style="z-index: 1050;">
+                            ${response.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `);
+
+            $('.notification').remove();
+            $('body').append(notification);
+
+            setTimeout(() => {
+                notification.alert('close');
+            }, 3000);
+        }
+    </script>
+}
+
+<style>
+    .notification {
+        min-width: 300px;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .badge {
+        font-size: 0.9em;
+        padding: 0.5em 0.7em;
+    }
+</style>

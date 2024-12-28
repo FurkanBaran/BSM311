@@ -1,0 +1,269 @@
+﻿@{
+    ViewData["Title"] = "Book Appointment";
+    Layout = "~/Areas/Customer/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2 id="service-details"></h2>
+    <img src="~/images/@(Model.ServiceId).jpg" alt="@Model.ServiceId">
+
+    <div id="service-info" class="mb-4"></div>
+
+
+    <div id="days-container" class="d-flex flex-wrap mb-4"></div>
+
+    <div id="employees-container" class="mb-4"></div>
+    <div id="time-container" class="mb-4"></div>
+
+    <form id="appointment-form">
+        <input type="hidden" id="ServiceId" value="@Model.ServiceId" />
+        <input type="hidden" id="AppointmentDate" />
+        <input type="hidden" id="EmployeeId" />
+
+        <div class="form-group">
+            <label for="Notes">Notes (Optional)</label>
+            <textarea id="Notes" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Book Appointment</button>
+            <a asp-area="Customer" asp-controller="Home" asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const serviceId = @Model.ServiceId;
+
+            function showNotification(response) {
+                const notification = $(`
+                            <div class="notification alert ${response.success ? 'alert-success' : 'alert-danger'} alert-dismissible fade show" role="alert">
+                                ${response.message}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `);
+
+                $('.notification').remove();
+                $('body').append(notification);
+
+                setTimeout(() => {
+                    notification.alert('close');
+                }, 3000);
+
+                if (response.success) {
+                    setTimeout(() => {
+                        window.location.href = '/Customer/Home/MyAppointments';
+                    }, 2000);
+                }
+            }
+
+            function loadServiceDetails() {
+                $.get(`/api/customer/appointment/service-details/${serviceId}`, function (response) {
+                    if (response.success && response.data) {
+                        $("#service-details").text(response.data.name);
+                        $("#service-info").html(`
+                                    <p>${response.data.description || ""}</p>
+                                    <p>Price: ${response.data.price} TL | Duration: ${response.data.durationInMinutes} minutes</p>
+                                `);
+                    }
+                }).fail(function (xhr) {
+                    showNotification(xhr.responseJSON || { success: false, message: "Error loading service details" });
+                });
+            }
+
+            function loadAvailableDays() {
+                $.get(`/api/customer/appointment/available-weeks/${serviceId}`, function (response) {
+                    if (response.success && response.data) {
+                        let html = '';
+                        response.data.forEach((week, index) => {
+                            html += `<div class="week-container ${index > 0 ? 'mt-3' : ''}">`;
+                            html += `<h5>${index === 0 ? 'This Week' : 'Next Week'}</h5>`;
+                            html += '<div class="d-flex flex-wrap">';
+
+                            week.days.forEach(day => {
+                                html += `
+                                            <button type="button"
+                                                    class="btn ${day.isAvailable ? 'btn-success' : 'btn-secondary'} m-2"
+                                                    ${day.isAvailable ? `onclick="selectDay('${day.date}')"` : 'disabled'}>
+                                                <div>${day.dayOfWeek}</div>
+                                                <small>${day.formattedDate}</small>
+                                            </button>
+                                        `;
+                            });
+
+                            html += '</div></div>';
+                        });
+
+                        $("#days-container").html(html);
+                    }
+                }).fail(function (xhr) {
+                    showNotification(xhr.responseJSON || { success: false, message: "Error loading available days" });
+                });
+            }
+
+            function loadAvailableEmployees(date) {
+                $.get(`/api/customer/appointment/available-employees/${serviceId}/${date}`, function (response) {
+                    if (response.success && response.data) {
+                        const options = response.data.map(emp =>
+                            `<option value="${emp.id}">${emp.fullName}</option>`
+                        ).join("");
+
+                        $("#employees-container").html(`
+                                    <label for="employee-select">Select Employee</label>
+                                    <select id="employee-select" class="form-select" onchange="selectEmployee(this.value)">
+                                        <option value="">-- Select Employee --</option>
+                                        ${options}
+                                    </select>
+                                `);
+                    }
+                }).fail(function (xhr) {
+                    showNotification(xhr.responseJSON || { success: false, message: "Error loading employees" });
+                });
+            }
+
+            function loadAvailableTimes(employeeId, date) {
+                $.get(`/api/customer/appointment/available-times/${employeeId}/${date}`, function (response) {
+                    if (response.success && response.data) {
+                        const times = response.data;
+                        if (times.length === 0) {
+                            $("#time-container").html("<p class='text-danger'>No available times for the selected day and employee.</p>");
+                            return;
+                        }
+
+                        const options = times.map(time => `
+                        <option value="${time.time}" ${time.isAvailable ? '' : 'disabled'}>
+                            ${time.time} ${time.isAvailable ? '' : '(Unavailable)'}
+                        </option>
+                    `).join("");
+
+                        $("#time-container").html(`
+                        <label for="time-select">Select Time</label>
+                        <select id="time-select" class="form-select" onchange="selectTime(this.value)">
+                            <option value="">-- Select Time --</option>
+                            ${options}
+                        </select>
+                    `);
+                    } else {
+                        showNotification({
+                            success: false,
+                            message: response.message || "Could not load available times"
+                        });
+                    }
+                }).fail(function (xhr) {
+                    showNotification(xhr.responseJSON || {
+                        success: false,
+                        message: "Error loading available times"
+                    });
+                });
+            }
+            function selectDay(day) {
+                console.log('Selected day:', day); // Debug için
+                $("#AppointmentDate").val(day);
+                loadAvailableEmployees(day);
+            }
+
+            function selectEmployee(employeeId) {
+                console.log('Selected employee:', employeeId); // Debug için
+                $("#EmployeeId").val(employeeId);
+                const date = $("#AppointmentDate").val();
+                loadAvailableTimes(employeeId, date);
+            }
+
+            function selectTime(time) {
+                const date = $("#AppointmentDate").val(); // "2024-12-28" formatında
+                const [hours, minutes] = time.split(':').map(Number);
+
+                // Tarihi ve saati birleştir
+                const appointmentDate = new Date(date);
+                appointmentDate.setHours(hours, minutes, 0, 0);
+
+                // Tarihi ISO formatında kaydet
+                $("#AppointmentDate").val(appointmentDate.toISOString());
+
+                console.log('Selected DateTime:', appointmentDate.toISOString()); // Debug için
+            }
+
+            $("#appointment-form").on("submit", function (e) {
+                e.preventDefault();
+
+                const appointmentDate = $("#AppointmentDate").val();
+                const employeeId = $("#EmployeeId").val();
+                const serviceId = $("#ServiceId").val();
+
+                if (!appointmentDate || !employeeId || !serviceId) {
+                    showNotification({
+                        success: false,
+                        message: "Please select date, employee and time."
+                    });
+                    return;
+                }
+
+                // Parse date to ensure valid format
+                const date = new Date(appointmentDate);
+
+                const appointmentData = {
+                    serviceId: parseInt(serviceId),
+                    appointmentDate: date.toISOString(), // Düzgün ISO formatı
+                    employeeId: parseInt(employeeId),
+                    notes: $("#Notes").val() || ""
+                };
+
+                console.log('Sending appointment data:', appointmentData); // Debug için
+
+                $.ajax({
+                    url: '/api/customer/appointment/book',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(appointmentData),
+                    success: function (response) {
+                        if (response.success) {
+                            showNotification({
+                                success: true,
+                                message: response.message || "Appointment booked successfully!"
+                            });
+
+                            setTimeout(() => {
+                                window.location.href = '/Customer/Home/MyAppointments';
+                            }, 2000);
+                        } else {
+                            showNotification({
+                                success: false,
+                                message: response.message || "Failed to book appointment."
+                            });
+                        }
+                    },
+                    error: function (xhr) {
+                        let errorMessage = "An error occurred while booking the appointment.";
+
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.errors) {
+                                const errors = Object.values(xhr.responseJSON.errors).flat();
+                                errorMessage = errors.join('\n');
+                            } else if (xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                        }
+
+                        showNotification({
+                            success: false,
+                            message: errorMessage
+                        });
+                    }
+                });
+            });
+
+
+            // Sayfa yüklendiğinde çalışacak fonksiyonları çağır
+            loadServiceDetails();
+            loadAvailableDays();
+
+            // Fonksiyonları global scope'a ekle
+            window.selectDay = selectDay;
+            window.selectEmployee = selectEmployee;
+            window.selectTime = selectTime;
+        });
+    </script>
+}

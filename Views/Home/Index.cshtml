@@ -1,8 +1,147 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
+}
+@{
+    var salonSettings = ViewBag.SalonSettings;
+    var todayHours = ViewBag.TodayWorkingHours;
+    var openDays = (IEnumerable<BSM311.Models.SalonWorkingHours>)ViewBag.OpenDays ?? new List<BSM311.Models.SalonWorkingHours>();
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+
+<!-- Hero Section -->
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 mb-4">Welcome to Our Salon</h1>
+        <p class="lead mb-4">Experience the best in beauty and wellness services</p>
+        <a href="#services" class="btn book-btn btn-lg">Book Now</a>
+    </div>
 </div>
+<div class="card mb-4">
+    <div class="card-body">
+        <h3 class="card-title">@(salonSettings?.SalonName ?? "Our Salon")</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Address:</strong> @(salonSettings?.Address ?? "Not specified")</p>
+                <p><strong>Phone:</strong> @(salonSettings?.Phone ?? "Not specified")</p>
+                <p><strong>Email:</strong> @(salonSettings?.Email ?? "Not specified")</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Today's Working Hours</h5>
+                @if (todayHours != null && ((BSM311.Models.SalonWorkingHours)todayHours).IsOpen)
+                {
+                    var hours = (BSM311.Models.SalonWorkingHours)todayHours;
+                    <p>Open today from @hours.OpenTime.ToString(@"hh\:mm") to @hours.CloseTime.ToString(@"hh\:mm")</p>
+                }
+                else
+                {
+                    <p>Closed today</p>
+                }
+
+                <h5>Working Days</h5>
+                @if (openDays != null && openDays.Any())
+                {
+                    <ul class="list-unstyled">
+                        @foreach (var day in openDays)
+                        {
+                            <li>
+                                <strong>@day.DayOfWeek:</strong>
+                                @day.OpenTime.ToString(@"hh\:mm") - @day.CloseTime.ToString(@"hh\:mm")
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>No working hours specified</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expertise Section -->
+<section class="mb-5">
+    <div class="container">
+        <h2 class="text-center section-title">Our Expertise</h2>
+        <div class="row g-4">
+            @foreach (var expertise in ViewBag.Expertises ?? new List<Expertise>())
+            {
+                <div class="col-md-4">
+                    <div class="card h-100 service-card">
+                        <div class="card-body text-center">
+                            <div class="expertise-icon">
+                                <i class="fas fa-spa"></i>
+                            </div>
+                            <h4 class="card-title">@expertise.Name</h4>
+                            <p class="card-text">@expertise.Description</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section id="services" class="mb-5">
+    <div class="container">
+        <h2 class="text-center section-title">Our Services</h2>
+        <div class="row g-4">
+            @foreach (var service in ViewBag.Services ?? new List<Service>())
+            {
+                <div class="col-md-4">
+                    <div class="card h-100 service-card">
+                        <img src="~/images/@(service.Id).jpg" class="card-img-top" alt="@service.Name">
+                        <div class="card-body">
+                            <h5 class="card-title">@service.Name</h5>
+                            <p class="card-text">@service.Description</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">@service.DurationInMinutes min</span>
+                                <span class="h5 mb-0">@service.Price.ToString("C2")</span>
+                            </div>
+                            <a href="/Customer/Home/BookAppointment?serviceId=@service.Id"
+                               class="btn book-btn w-100 mt-3">Book Now</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us Section -->
+<section class="mb-5 bg-light py-5">
+    <div class="container">
+        <h2 class="text-center section-title">Why Choose Us</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="expertise-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h4>Expert Staff</h4>
+                    <p>Our team of professionals is highly trained and experienced</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="expertise-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h4>Flexible Hours</h4>
+                    <p>We work around your schedule to provide convenient appointment times</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="expertise-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h4>Quality Service</h4>
+                    <p>We use only the best products and latest techniques</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

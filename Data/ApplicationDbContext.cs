@@ -1,11 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using BSM311.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace BSM311.Data
 {
@@ -22,16 +17,25 @@ namespace BSM311.Data
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<SalonSettings> SalonSettings { get; set; }
         public DbSet<SalonWorkingHours> SalonWorkingHours { get; set; }
-        public DbSet<EmployeeWorkDay> EmployeeWorkDays { get; set; } // Eklendi
+        public DbSet<EmployeeWorkDay> EmployeeWorkDays { get; set; }
+        public DbSet<EmployeeExpertise> EmployeeExpertises { get; set; } // EmployeeExpertise DbSet'i eklendi
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<EmployeeExpertise>()
+                .HasKey(ee => new { ee.EmployeeId, ee.ExpertiseId });
 
-            builder.Entity<Employee>()
-                .HasMany(e => e.Expertises)
-                .WithMany(e => e.Employees);
+            builder.Entity<EmployeeExpertise>()
+                .HasOne(ee => ee.Employee)
+                .WithMany(e => e.Expertises)
+                .HasForeignKey(ee => ee.EmployeeId);
+
+            builder.Entity<EmployeeExpertise>()
+                .HasOne(ee => ee.Expertise)
+                .WithMany(e => e.Employees)
+                .HasForeignKey(ee => ee.ExpertiseId);
 
             builder.Entity<Service>()
                 .HasOne(s => s.Expertise)
@@ -56,13 +60,8 @@ namespace BSM311.Data
                 .HasForeignKey(a => a.ServiceId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<Employee>()
-                .HasOne(e => e.User)
-                .WithOne()
-                .HasForeignKey<Employee>(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Entity<EmployeeWorkDay>() // Düzeltildi
+            builder.Entity<EmployeeWorkDay>()
                 .HasOne(ewd => ewd.Employee)
                 .WithMany(e => e.WorkDays)
                 .HasForeignKey(ewd => ewd.EmployeeId);
@@ -75,18 +74,12 @@ namespace BSM311.Data
             builder.Entity<EmployeeWorkDay>()
                 .HasIndex(ewd => new { ewd.EmployeeId, ewd.DayOfWeek });
 
-                        builder.Entity<Appointment>()
-                            .HasIndex(a => a.AppointmentDate);
+            builder.Entity<Appointment>()
+                .HasIndex(a => a.AppointmentDate);
 
             builder.Entity<Service>()
                 .Property(s => s.Price)
                 .HasPrecision(18, 2);
-
-
-
-
         }
     }
-
-
 }

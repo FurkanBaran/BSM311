@@ -1,0 +1,41 @@
+﻿@model IEnumerable<BSM311.Models.DTOs.ExpertiseDTO>
+
+@{
+    Layout = "~/Areas/Customer/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2 class="text-center">Our Services</h2>
+    @foreach (var expertise in Model)
+    {
+        <div class="card my-3">
+            <div class="card-header bg-primary text-white">
+                <h4>@expertise.Name</h4>
+                <p class="mb-0">@expertise.Description</p>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var service in expertise.Services)
+                    {
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">@service.Name</h5>
+                                    <p class="card-text">@service.Description</p>
+                                    <p class="card-text">
+                                        <strong>Price:</strong> @service.Price.ToString("C")<br />
+                                        <strong>Duration:</strong> @service.DurationInMinutes minutes
+                                    </p>
+                                    <a href="@Url.Action("BookAppointment", "Home", new { serviceId = service.Id })"
+                                       class="btn btn-primary">
+                                        Book Appointment
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,192 @@
+﻿@{
+    ViewData["Title"] = "Appointments";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1>Appointments</h1>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-striped" id="appointmentsTable">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Customer</th>
+                        <th>Employee</th>
+                        <th>Service</th>
+                        <th>Price</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            loadAppointments();
+        });
+
+        function loadAppointments() {
+            $.get('/api/admin/appointment', function (response) {
+                if (response.success) {
+                    const tbody = $('#appointmentsTable tbody');
+                    tbody.empty();
+
+                    response.data.forEach(appointment => {
+                        const row = `
+                                    <tr>
+                                        <td>${formatDateTime(appointment.appointmentDate)}</td>
+                                        <td>${appointment.customer}</td>
+                                        <td>${appointment.employee}</td>
+                                        <td>${appointment.service}</td>
+                                        <td>${formatPrice(appointment.price)}</td>
+                                        <td>${appointment.duration} mins</td>
+                                        <td>${getStatusBadge(appointment.status)}</td>
+                                        <td>${appointment.notes || ''}</td>
+                                        <td>
+                                            ${appointment.canEdit ? `
+                                                <div class="btn-group">
+                                                    <button class="btn btn-sm btn-primary dropdown-toggle"
+                                                            data-bs-toggle="dropdown">
+                                                        Status
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#"
+                                                            onclick="updateStatus(${appointment.id}, 0)">Pending</a></li>
+                                                        <li><a class="dropdown-item" href="#"
+                                                            onclick="updateStatus(${appointment.id}, 1)">Confirmed</a></li>
+                                                        <li><a class="dropdown-item" href="#"
+                                                            onclick="updateStatus(${appointment.id}, 2)">Completed</a></li>
+                                                        <li><a class="dropdown-item" href="#"
+                                                            onclick="updateStatus(${appointment.id}, 3)">Cancelled</a></li>
+                                                    </ul>
+                                                </div>
+                                                <button class="btn btn-sm btn-danger"
+                                                        onclick="deleteAppointment(${appointment.id})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            ` : ''}
+                                        </td>
+                                    </tr>
+                                `;
+                        tbody.append(row);
+                    });
+                }
+            });
+        }
+
+        function formatDateTime(dateString) {
+            // Append 'Z' if it's missing
+            if (!dateString.endsWith('Z')) {
+                dateString += 'Z';
+            }
+            const date = new Date(dateString);
+            return date.toLocaleString('tr-TR', {
+                timeZone: 'Europe/Istanbul',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatPrice(price) {
+            return price.toLocaleString('tr-TR', {
+                style: 'currency',
+                currency: 'USD'
+            });
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                0: 'warning',   // Pending
+                1: 'success',   // Confirmed
+                2: 'info',      // Completed
+                3: 'danger'     // Cancelled
+            };
+
+            const statusNames = {
+                0: 'Pending',
+                1: 'Confirmed',
+                2: 'Completed',
+                3: 'Cancelled'
+            };
+
+            return `<span class="badge bg-${badges[status]}">${statusNames[status]}</span>`;
+        }
+
+        function updateStatus(id, status) {
+            $.ajax({
+                url: `/api/admin/appointment/${id}/status`,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ status: status }),
+                success: function (response) {
+                    if (response.success) {
+                        showNotification(response);
+                        loadAppointments();
+                    }
+                },
+                error: function (xhr) {
+                    showNotification(xhr.responseJSON || {
+                        success: false,
+                        message: "Error updating status"
+                    });
+                }
+            });
+        }
+
+        function deleteAppointment(id) {
+            if (confirm('Are you sure you want to delete this appointment?')) {
+                $.ajax({
+                    url: `/api/admin/appointment/${id}`,
+                    type: 'DELETE',
+                    success: function (response) {
+                        if (response.success) {
+                            showNotification(response);
+                            loadAppointments();
+                        }
+                    },
+                    error: function (xhr) {
+                        showNotification(xhr.responseJSON || {
+                            success: false,
+                            message: "Error deleting appointment"
+                        });
+                    }
+                });
+            }
+        }
+
+        function showNotification(response) {
+            const notification = $(`
+                        <div class="notification alert ${response.success ? 'alert-success' : 'alert-danger'}
+                             alert-dismissible fade show position-fixed top-0 end-0 m-3"
+                             role="alert" style="z-index: 1050;">
+                            ${response.message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `);
+
+            $('.notification').remove();
+            $('body').append(notification);
+
+            setTimeout(() => {
+                notification.alert('close');
+            }, 3000);
+        }
+    </script>
+}

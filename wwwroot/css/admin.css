@@ -1,0 +1,164 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+/* General Card Styling */
+.card {
+    border-radius: 15px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+/* Gradient Colors */
+.gradient-purple {
+    background: linear-gradient(135deg, #6a1b9a, #9c27b0);
+}
+
+.gradient-green {
+    background: linear-gradient(135deg, #388e3c, #66bb6a);
+}
+
+.gradient-blue {
+    background: linear-gradient(135deg, #283593, #3f51b5);
+}
+
+.gradient-red {
+    background: linear-gradient(135deg, #b71c1c, #e53935);
+}
+
+/* Button Styling */
+.gradient-button {
+    background: linear-gradient(135deg, #ffffff, #f5f5f5);
+    color: #000;
+    border-radius: 25px;
+    border: none;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+}
+
+    .gradient-button:hover {
+        background: linear-gradient(135deg, #f5f5f5, #ffffff);
+        color: #333;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+/* Revenue Card Specific */
+.revenue-card {
+    background: linear-gradient(135deg, #4527a0, #673ab7);
+    border-radius: 20px;
+}
+
+
+/* Adjust the Admin Panel navbar */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-left: 20px; /* Add margin to prevent it from sticking to the edge */
+}
+
+/* Navbar links hover effect */
+.navbar-nav .nav-link {
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+    .navbar-nav .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+    }
+
+/* Logout button alignment */
+.navbar-nav.ms-auto .nav-link {
+    font-weight: bold;
+    color: #ffdddd;
+}
+
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.notification {
+    min-width: 300px;
+    max-width: 400px;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateX(120%);
+    transition: transform 0.3s ease-in-out;
+}
+
+    .notification.show {
+        transform: translateX(0);
+    }
+
+    .notification.hiding {
+        transform: translateX(120%);
+    }
+.work-days-container,
+.expertise-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+    .work-days-container.is-invalid,
+    .expertise-container.is-invalid {
+        border-color: #dc3545;
+    }
+
+.form-check {
+    margin-bottom: 0;
+    padding: 5px 10px;
+}
+
+    .form-check:hover {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+}
+
+.expertise-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}

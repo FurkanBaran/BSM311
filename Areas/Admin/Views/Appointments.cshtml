@@ -1,0 +1,32 @@
+﻿@model IEnumerable<BSM311.Models.Appointment>
+
+<h1>Randevu Yönetimi</h1>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Tarih</th>
+            <th>Saat</th>
+            <th>Müşteri</th>
+            <th>Hizmet</th>
+            <th>Çalışan</th>
+            <th>Durum</th>
+            <th>Aksiyon</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var appointment in Model)
+        {
+            <tr>
+                <td>@appointment.AppointmentDate.ToShortDateString()</td>
+                <td>@appointment.Customer.FirstName @appointment.Customer.LastName</td>
+                <td>@appointment.Service.Name</td>
+                <td>@appointment.Employee.FirstName @appointment.Employee.LastName</td> 
+                <td>@appointment.Status</td>
+                <td>
+                    <a href="/Admin/ApproveAppointment/@appointment.Id" class="btn btn-success btn-sm">Onayla</a>
+                    <a href="/Admin/CancelAppointment/@appointment.Id" class="btn btn-danger btn-sm">İptal Et</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
